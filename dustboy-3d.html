@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aloy's Cyber-Dustboy 3D Terminal</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: #00ff41;
+            /* Cyberpunk / Matrix green */
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Let clicks pass to 3D */
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .panel {
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            pointer-events: auto;
+            /* Re-enable clicks inside panels */
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            border-top: 3px solid #ff2a2a;
+            /* Samurai Crimson */
+            width: 300px;
+        }
+
+        #header-panel h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #ff2a2a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(255, 42, 42, 0.8);
+        }
+
+        #header-panel .subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #log-panel {
+            width: 350px;
+            height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #log-stream {
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            padding-right: 5px;
+        }
+
+        /* Custom Scrollbar for Logs */
+        #log-stream::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #log-stream::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        #log-stream::-webkit-scrollbar-thumb {
+            background: #00ff41;
+        }
+
+        .log-entry {
+            border-left: 2px solid #333;
+            padding-left: 8px;
+            margin-bottom: 8px;
+            animation: fadeIn 0.3s ease-out;
+            word-wrap: break-word;
+        }
+
+        .log-time {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
+        .log-dust {
+            font-weight: bold;
+        }
+
+        .c-good {
+            color: #00ff41;
+        }
+
+        .c-mod {
+            color: #e5e500;
+        }
+
+        .c-bad {
+            color: #ff8c00;
+        }
+
+        .c-severe {
+            color: #ff2a2a;
+        }
+
+        .c-haz {
+            color: #a020f0;
+        }
+
+        #stats-panel {
+            width: 250px;
+            height: max-content;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px dotted #333;
+            padding-bottom: 5px;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #666;
+            font-size: 0.8rem;
+            border-top: 1px solid #222;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff2a2a;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #ff2a2a;
+            z-index: 100;
+        }
+
+        /* MQTT connection status indicator */
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ff2a2a;
+            /* starts disconnected */
+            margin-right: 5px;
+        }
+
+        .connected {
+            background-color: #00ff41;
+            box-shadow: 0 0 5px #00ff41;
+        }
+    </style>
+
+    <!-- MQTT script -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <!-- Three.js (Module) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <div id="loading">Initiating Server Link...</div>
+
+    <div id="ui-layer">
+        <div class="panel" id="log-panel">
+            <h3 style="margin:0 0 10px 0; border-bottom: 1px solid #00ff41; padding-bottom: 5px;">
+                <span class="status-dot" id="conn-status"></span>
+                DUSTBOY TERMINAL LOGS
+            </h3>
+            <div id="log-stream">
+                <div class="log-time">Waiting for live data feed...</div>
+            </div>
+        </div>
+
+        <div class="panel" id="header-panel">
+            <h1>Oracle Air Net</h1>
+            <div class="subtitle">Live PM 2.5 3D Visualization</div>
+        </div>
+
+        <div class="panel" id="stats-panel">
+            <h3 style="margin:0 0 15px 0; color:#00ff41;">System Overview</h3>
+            <div class="stat-box">
+                <div>Nodes Active</div>
+                <div class="stat-val" id="val-nodes">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Highest PM2.5</div>
+                <div class="stat-val c-severe" id="val-max-pm">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Last Update</div>
+                <div class="stat-val" id="val-time" style="font-size:1rem;">N/A</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        🤖 Hologram Configured by <span style="color:#ff2a2a; font-weight:bold;">Aloy</span> — Samurai Architect | 🔄
+        Live Data via DustBoy MQTT
+    </footer>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // ==========================================
+        // 1. THREE.JS SCENE SETUP (The Cyber Dojo)
+        // ==========================================
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.002); // Deep cyberspace fog
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.set(0, 200, 400);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true; // Slowly rotate the scene
+        controls.autoRotateSpeed = 0.5;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't go below the floor grid
+
+        // -- Lighting --
+        const ambientLight = new THREE.AmbientLight(0x222222);
+        scene.add(ambientLight);
+
+        // -- The Grid (Cyberspace Floor) --
+        const gridHelper = new THREE.GridHelper(2000, 100, 0x00ff41, 0x111111);
+        gridHelper.material.opacity = 0.2;
+        gridHelper.material.transparent = true;
+        scene.add(gridHelper);
+
+        // Center monolithic core
+        const coreGeo = new THREE.OctahedronGeometry(20, 0);
+        const coreMat = new THREE.MeshBasicMaterial({ color: 0xff2a2a, wireframe: true });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        core.position.y = 50;
+        scene.add(core);
+
+        // ==========================================
+        // 2. DATA VISUALIZATION SYSTEMS
+        // ==========================================
+
+        // Dictionary to track active stations in 3D space
+        const stations = {};
+
+        // Particle system for the dust visual
+        // Using InstancedMesh for high performance with thousands of particles
+        const dummy = new THREE.Object3D();
+        const maxParticles = 5000;
+        const particleGeo = new THREE.BoxGeometry(2, 2, 2);
+        const particleMat = new THREE.MeshBasicMaterial();
+        const instancedMesh = new THREE.InstancedMesh(particleGeo, particleMat, maxParticles);
+
+        // Arrays to manage individual particle states
+        const particleData = [];
+        let pCount = 0; // Current living particles
+
+        scene.add(instancedMesh);
+
+        // Helper: Convert PM2.5 to Color and CSS Class
+        function getAirQualityVisuals(pm25) {
+            // Standard AQI colors roughly applied to PM2.5 µg/m³
+            if (pm25 <= 15) return { color: 0x00ff41, class: 'c-good', label: 'GOOD' };
+            if (pm25 <= 35) return { color: 0xe5e500, class: 'c-mod', label: 'MODERATE' };
+            if (pm25 <= 55) return { color: 0xff8c00, class: 'c-bad', label: 'UNHEALTHY(SG)' };
+            if (pm25 <= 150) return { color: 0xff2a2a, class: 'c-severe', label: 'UNHEALTHY' };
+            return { color: 0xa020f0, class: 'c-haz', label: 'HAZARDOUS' };
+        }
+
+        // Create a visual node for a new station
+        function createStationVisual(id) {
+            // Randomly position around the core, but not too far
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 50 + Math.random() * 400;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+
+            // Base platform
+            const baseGeo = new THREE.CylinderGeometry(5, 5, 2, 8);
+            const baseMat = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.set(x, 1, z);
+            scene.add(base);
+
+            // Floating identifier ring
+            const ringGeo = new THREE.RingGeometry(6, 7, 16);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, side: THREE.DoubleSide });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.set(x, 10, z);
+            scene.add(ring);
+
+            return { x, z, base, ring, lastPm: 0 };
+        }
+
+        // Spawn flying particles from a station when data arrives
+        function spawnParticlesForData(stationNode, pm25, visuals) {
+            // Determine how many particles based on pollution level (up to 50 at once)
+            const spawnCount = Math.min(Math.floor(pm25 / 2) + 5, 50);
+
+            for (let i = 0; i < spawnCount; i++) {
+                if (pCount >= maxParticles) break; // Reached limit
+
+                // Physics state
+                particleData.push({
+                    x: stationNode.x + (Math.random() - 0.5) * 10,
+                    y: 10 + Math.random() * 5,
+                    z: stationNode.z + (Math.random() - 0.5) * 10,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: 2 + Math.random() * (pm25 / 10), // Shoot higher if more polluted
+                    vz: (Math.random() - 0.5) * 2,
+                    life: 1.0,
+                    decay: 0.005 + Math.random() * 0.01,
+                    color: new THREE.Color(visuals.color)
+                });
+
+                pCount++;
+            }
+        }
+
+        // UI Updater
+        const logStream = document.getElementById('log-stream');
+        let maxPmRecorded = 0;
+
+        function updateUI(id, data, visuals) {
+            // Check max
+            if (data.pm25 > maxPmRecorded) {
+                maxPmRecorded = data.pm25;
+                document.getElementById('val-max-pm').innerText = maxPmRecorded.toFixed(1);
+            }
+
+            // Update time
+            const now = new Date();
+            document.getElementById('val-time').innerText = now.toLocaleTimeString();
+            document.getElementById('val-nodes').innerText = Object.keys(stations).length;
+
+            // Add log terminal entry
+            const logHTML = `
+                <div class="log-entry">
+                    <div class="log-time">${now.toISOString().split('T')[1].substr(0, 12)} [NODE: ${id.substr(-6)}]</div>
+                    <span class="log-dust ${visuals.class}">PM2.5: ${data.pm25} µg/m³</span> 
+                    <span style="color:#555;">| T: ${data.temp}°C | H: ${data.humid}%</span>
+                    <div style="font-size: 0.6rem; color: #888;">${visuals.label}</div>
+                </div>
+            `;
+
+            // Insert at top
+            logStream.insertAdjacentHTML('afterbegin', logHTML);
+
+            // Keep log size bounded so DOM doesn't freeze
+            if (logStream.children.length > 50) {
+                logStream.removeChild(logStream.lastChild);
+            }
+        }
+
+        // ==========================================
+        // 3. MQTT LIVE CONNECTION
+        // ==========================================
+        const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+        const host = 'wss://dustboy-wss-bridge.laris.workers.dev/mqtt';
+
+        const client = mqtt.connect(host, {
+            clientId: clientId,
+            clean: true,
+            connectTimeout: 4000
+        });
+
+        client.on('connect', () => {
+            console.log('Connected to DustBoy Cyber Network');
+            document.getElementById('loading').style.display = 'none';
+
+            const dot = document.getElementById('conn-status');
+            dot.classList.add('connected');
+
+            // Subscribe to all dustboy statuses
+            const topic = 'DUSTBOY/+/+/+/status';
+            client.subscribe(topic, () => {
+                const logHTML = `<div class="log-entry" style="color:#00ff41;">[SYS] SUBSCRIBED: ${topic}</div>`;
+                logStream.insertAdjacentHTML('afterbegin', logHTML);
+            });
+        });
+
+        client.on('error', (err) => {
+            console.error('MQTT Error:', err);
+            document.getElementById('loading').innerText = 'Connection Failed. Please reload.';
+        });
+
+        // Handle incoming live data
+        client.on('message', (topic, message) => {
+            try {
+                // Topic format: DUSTBOY/[version?]/[type?]/[ID]/status
+                const parts = topic.split('/');
+                const id = parts[3]; // The unique ID of the device
+
+                const packet = JSON.parse(message.toString());
+                // Extract PM2.5, temp, humid (struct depends on real data, guessing common names based on typical sensors)
+                const pm25 = packet.pm25 || packet.pm2_5 || packet.pm || 0;
+                const temp = packet.temp || packet.t || packet.temperature || 0;
+                const humid = packet.humid || packet.h || packet.humidity || 0;
+
+                if (pm25 <= 0) return; // Ignore empty/invalid packets
+
+                const visuals = getAirQualityVisuals(pm25);
+
+                // Register station if new
+                if (!stations[id]) {
+                    stations[id] = createStationVisual(id);
+                }
+
+                // Spik the ring color 
+                stations[id].ring.material.color.setHex(visuals.color);
+                // Make the ring jump temporarily
+                stations[id].ring.position.y = 15;
+
+                // Fire particles
+                spawnParticlesForData(stations[id], pm25, visuals);
+
+                // Update Terminal UI
+                updateUI(id, { pm25, temp, humid }, visuals);
+
+            } catch (e) {
+                console.error("Failed to parse incoming signal", e);
+            }
+        });
+
+
+        // ==========================================
+        // 4. ANIMATION RENDER LOOP
+        // ==========================================
+        const clock = new THREE.Clock();
+
+        function updateParticles(delta) {
+            let activeCount = 0;
+
+            for (let i = 0; i < pCount; i++) {
+                const p = particleData[i];
+                if (p.life > 0) {
+                    // Motion
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.z += p.vz;
+
+                    // Gravity / wind
+                    p.vy -= 9.8 * delta; // Fall down
+
+                    // Decay over time
+                    p.life -= p.decay;
+
+                    // Update transform matrix for InstancedMesh
+                    dummy.position.set(p.x, p.y, p.z);
+
+                    // Shrink as they die
+                    const s = Math.max(0.1, p.life);
+                    dummy.scale.set(s, s, s);
+
+                    dummy.updateMatrix();
+                    instancedMesh.setMatrixAt(activeCount, dummy.matrix);
+
+                    // Set color
+                    instancedMesh.setColorAt(activeCount, p.color);
+
+                    // If it belongs in the active pool, move it up
+                    if (activeCount !== i) {
+                        particleData[activeCount] = particleData[i];
+                    }
+                    activeCount++;
+                }
+            }
+
+            pCount = activeCount; // New living count
+            instancedMesh.count = pCount;
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
+
+            // Reset jumping rings
+            for (let id in stations) {
+                if (stations[id].ring.position.y > 10) {
+                    stations[id].ring.position.y -= delta * 10;
+                }
+            }
+
+            // Core pulsing
+            core.rotation.y += delta;
+            core.rotation.x += delta * 0.5;
+            const coreScale = 1 + Math.sin(clock.elapsedTime * 2) * 0.1;
+            core.scale.set(coreScale, coreScale, coreScale);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            controls.update(); // Handles auto-rotate
+            updateParticles(delta);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+    </script>
+</body>
+
+</html>
