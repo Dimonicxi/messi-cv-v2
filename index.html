@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lionel Messi - 1 Page CV</title>
+    <!-- Use basic Google Fonts for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --text-main: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --accent: #fca311;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e9ecef;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .cv-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .header-text h2 {
+            margin: 5px 0 0 0;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .contact-info p {
+            margin: 3px 0;
+        }
+
+        section {
+            margin-bottom: 25px;
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .experience-item {
+            margin-bottom: 15px;
+        }
+
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 5px;
+        }
+
+        .experience-header h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .experience-header span {
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        ul li {
+            margin-bottom: 5px;
+        }
+
+        .summary {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin: 2px 2px 2px 0;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+            }
+
+            .contact-info {
+                text-align: left;
+                margin-top: 15px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .experience-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cv-container">
+        <header>
+            <div class="header-text">
+                <h1>ลิโอเนล อันเดรส เมสซี่</h1>
+                <h2>นักฟุตบอลอาชีพ / กัปตันทีมชาติอาร์เจนตินา</h2>
+            </div>
+            <div class="contact-info">
+                <p><strong>เกิด:</strong> 24 มิถุนายน 1987</p>
+                <p><strong>สโมสร:</strong> อินเตอร์ ไมอามี (Inter Miami CF)</p>
+                <p><strong>ตำแหน่ง:</strong> กองหน้า / Playmaker</p>
+            </div>
+        </header>
+
+        <section>
+            <h3>บทสรุปประวัติ (Profile)</h3>
+            <div class="summary">
+                นักฟุตบอลระดับตำนาน (GOAT - Greatest of All Time)
+                ผู้ทำลายขีดจำกัดทางสรีรวิทยาในวัยเด็กสู่สัญลักษณ์ของวงการกีฬาโลก เจ้าของแชมป์เมเจอร์มากกว่า 47 รายการ
+                โดดเด่นด้วยวิวัฒนาการทางแทคติกจากปีกจอมทลายแนวรับ สู่จอมทัพเพลย์เมกเกอร์ระดับปรมาจารย์
+                เป็นกลไกสำคัญขับเคลื่อนมูลค่าเศรษฐศาสตร์ฟุตบอลยุคใหม่
+            </div>
+        </section>
+
+        <section>
+            <h3>ประสบการณ์ระดับสโมสร (Club Experience)</h3>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <h4>อินเตอร์ ไมอามี (Inter Miami CF)</h4>
+                    <span>2023 – ปัจจุบัน</span>
+                </div>
+                <ul>
+                    <li>พาทีมคว้าแชมป์ MLS Cup (2025), Supporters' Shield (2024), Leagues Cup (2023)</li>
+                    <li>คว้ารางวัล MLS MVP และ MLS Golden Boot ประจำฤดูกาล 2025</li>
+                    <li>สร้างปรากฏการณ์ "Messi Effect" เพิ่มมูลค่าทีม 3 เท่า กระตุ้นยอดผู้ชมและรายได้ MLS มหาศาล</li>
+                </ul>
+            </div>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <h4>ปารีส แซงต์-แชร์กแมง (PSG)</h4>
+                    <span>2021 – 2023</span>
+                </div>
+                <ul>
+                    <li>คว้าแชมป์ลีกเอิง (Ligue 1) 2 สมัย</li>
+                    <li>ยกระดับบทบาทการเล่นเป็น Deep-lying Playmaker คุมจังหวะและสร้างโอกาสให้ทีม</li>
+                </ul>
+            </div>
+
+            <div class="experience-item">
+                <div class="experience-header">
+                    <h4>เอฟซี บาร์เซโลนา (FC Barcelona)</h4>
+                    <span>2004 – 2021</span>
+                </div>
+                <ul>
+                    <li>ลงสนาม 778 นัด ยิง 672 ประตู (สถิติสูงสุดตลอดกาลของสโมสรเดียว)</li>
+                    <li>คว้าแชมป์ลาลีกา 10 สมัย, ยูฟ่าแชมเปียนส์ลีก 4 สมัย, โกปา เดล เรย์ 7 สมัย</li>
+                    <li>สร้างประวัติศาสตร์ยิง 73 ประตูรวมทุกรายการในฤดูกาลเดียว (2011-12)</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="grid-2">
+            <section>
+                <h3>ความสำเร็จทีมชาติ</h3>
+                <div class="experience-item" style="margin-bottom:0;">
+                    <div class="experience-header">
+                        <h4>ทีมชาติอาร์เจนตินา (2005-ปัจจุบัน)</h4>
+                    </div>
+                    <ul>
+                        <li><strong>World Cup:</strong> แชมป์ 2022, รองแชมป์ 2014, Golden Ball 2 สมัย</li>
+                        <li><strong>Copa América:</strong> แชมป์ 2 สมัย (2021, 2024)</li>
+                        <li><strong>Finalissima:</strong> แชมป์ 2022</li>
+                        <li><strong>Olympics:</strong> เหรียญทอง 2008</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3>ทักษะ & ยุทธวิธี</h3>
+                <div>
+                    <span class="badge">Playmaking</span>
+                    <span class="badge">La Pausa</span>
+                    <span class="badge">Free Kicks</span>
+                    <span class="badge">Dribbling</span>
+                    <span class="badge">Finishing</span>
+                    <span class="badge">Vision</span>
+                    <span class="badge">False 9</span>
+                </div>
+                <ul style="margin-top: 10px; padding-left: 15px;">
+                    <li><strong>วิวัฒนาการ:</strong> ปีกขวาความเร็วสูง สู่หน้าเป้า False 9 และเพลย์เมกเกอร์เชิงลึก</li>
+                    <li><strong>จุดเด่น:</strong> การจ่ายบอลทะลุช่องแม่นยำ, การเลี้ยงบอลแนบชิดเท้า, ทักษะฟรีคิกระดับโลก
+                        (69 ประตู)</li>
+                </ul>
+            </section>
+        </div>
+
+        <section>
+            <h3>การอุทิศตนเพื่อสังคม (Philanthropy)</h3>
+            <ul>
+                <li><strong>UNICEF Goodwill Ambassador (2010):</strong> ปฏิบัติหน้าที่เพื่อเด็กด้อยโอกาสทั่วโลก</li>
+                <li><strong>Leo Messi Foundation:</strong> ระดมทุนสร้างโรงพยาบาลรักษามะเร็งเด็กในบาร์เซโลนา,
+                    สร้างห้องเรียนในซีเรีย และระบบน้ำสะอาดในเคนยา</li>
+                <li><strong>รางวัลเชิดชูเกียรติ:</strong> Laureus World Sports Awards (2 ครั้ง)
+                    ด้านการสร้างผลกระทบเชิงบวก</li>
+            </ul>
+        </section>
+    </div>
+</body>
+
+</html>
